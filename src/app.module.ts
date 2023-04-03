@@ -20,11 +20,20 @@ import { File } from "./files/file.model";
 
 @Module({
 
+
   imports: [
+    // получаем конфигурацию.
+    // имя файла с конфигурацией берём из переменной окружения NODE_ENV.
     ConfigModule.forRoot({ envFilePath: `.${process.env.NODE_ENV}.env` }),
+
+    // устанавливаем папку для get запросов статики
     ServeStaticModule.forRoot({
       rootPath: path.resolve(__dirname, "static")
     }),
+
+    // инициализируем базу данных
+    // используем переменные окружения из предыдущего пункта
+    // в models явно указываем все таблицы, с которыми собираемя работать
     SequelizeModule.forRoot({
       dialect: "postgres",
       host: process.env.POSTGRES_HOST,
@@ -36,6 +45,8 @@ import { File } from "./files/file.model";
       autoLoadModels: true
 
     }),
+
+    // регистрируем модули, котрые используются в приложении
     UsersModule,
     RolesModule,
     AuthModule,
