@@ -47,9 +47,11 @@ export class FilesService {
 
   async clearOldUnusedFiles() {
 
+    // засекам один час
     const { Op } = require("sequelize");
-    const delta = new Date(Date.now() - 180 * 60 * 1000);
+    const delta = new Date(Date.now() - 60 * 60 * 1000);
 
+    // массив с записями старше часа
     const arr1 = await this.fileRepository.findAll({
       where: {
         createdAt: { [Op.lt]: delta }
@@ -57,20 +59,25 @@ export class FilesService {
     });
     let arr11 = arr1.map((obj) => obj.fileName);
 
+    // массив с записями, неиспользуемыми в таблицах
     const arr2 = await this.fileRepository.findAll({
       where: { essenceTable: null }
     });
     let arr22 = arr2.map((obj) => obj.fileName);
 
+    // массив с записями, неиспользуемыми пользователями
     const arr3 = await this.fileRepository.findAll({
       where: { essenceId: null }
     });
     let arr33 = arr3.map((obj) => obj.fileName);
 
+    // пересечение (коньюнкция) массивов 2 и 3 (не имеет таблиц и пользователей)
     let conArrs = arr22.filter(x => arr33.includes(x));
 
+    // объединение получившегося массива с массивом просроченных файлов
     let resArr = [...new Set([...arr11, ...conArrs])];
 
+    // проходим по массиву, удаляем файлы и соответствующие записи из базы
     resArr.map(async (fileName) => {
       await this.deleteFile(fileName)
       await this.fileRepository.destroy({ where: { fileName } });
@@ -79,4 +86,10 @@ export class FilesService {
     return(`${resArr.length} files were deleted`);
 
   }
+
+  async deleteUserFromFileTable(id){
+    await this.fileRepository.update({essenceId:null},{where:{essenceId:id}})
+  }
 }
+
+
