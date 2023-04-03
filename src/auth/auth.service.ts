@@ -23,24 +23,29 @@ export class AuthService {
   }
 
   async registration(dto: FullUserDto) {
-
+    // проверяем, существует ли пользователь с таким мейлом. Если да -
+    // пробрасываем ошибку.
     const candidateMail = await this.userService.getUserByEmail(dto.email);
 
     if (candidateMail) {
       throw new HttpException("User with this email is already exists", HttpStatus.BAD_REQUEST);
     }
 
+    // проверяем, существует ли профиль с таким ником. Если да -
+    // пробрасываем ошибку.
     const candidateNick = await this.profileService.getUserByNick(dto.nickName);
 
     if (candidateNick) {
       throw new HttpException("User with this nickname is already exists", HttpStatus.BAD_REQUEST);
     }
 
+    // получаем хэш пароля, создаём пользователя и профиль
     const hashPassword = await bcrypt.hash(dto.password, 3);
-    const user = await this.userService.createUser({ email: dto.email, password: hashPassword });
 
+    const user = await this.userService.createUser({ email: dto.email, password: hashPassword });
     await this.profileService.create({ ...dto, userId: user.id });
 
+    // возвращаем токен в случае успешной регистрации
     return this.generateToken(user);
 
   }
