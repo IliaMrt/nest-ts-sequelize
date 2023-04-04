@@ -9,6 +9,7 @@ import {RolesModule} from "../roles/roles.module";
 import {AuthModule} from "../auth/auth.module";
 import { Profile } from "../profile/profile.model";
 import { ProfileModule } from "../profile/profile.module";
+import { FilesModule } from "../files/files.module";
 
 @Module({
   controllers: [UsersController],
@@ -16,6 +17,7 @@ import { ProfileModule } from "../profile/profile.module";
   imports:[SequelizeModule.forFeature([User,Role,UserRoles,Profile]),
     RolesModule,
     ProfileModule,
+    FilesModule,           
     forwardRef(()=>AuthModule)],
   exports:[UsersService]
 })
